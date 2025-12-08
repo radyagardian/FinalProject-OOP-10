@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="Backend2" target="17" />
+      <module name="Backend2.main" target="17" />
+      <module name="Backend2.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Backend" options="-parameters" />
+      <module name="Backend.main" options="-parameters" />
+      <module name="Backend.test" options="-parameters" />
+      <module name="Backend2" options="-parameters" />
+      <module name="Backend2.main" options="-parameters" />
+      <module name="Backend2.test" options="-parameters" />
+    </option>
+  </component>
+</project>
