@@ -11,46 +11,56 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 public class Player {
+    // --- KONFIGURASI POSISI ---
+    private float scale = 0.4f;
+    private float RIFLE_FORWARD = 40f;
+    private float RIFLE_SIDE = -45f;
+    private float GUN_LENGTH = 85f;
+
+    // --- VARIABLES ---
     private Vector2 position;
     private float speed;
+    private Sprite torso, head, rifle, leftFoot, rightFoot;
 
-    // --- SPRITES BAGIAN TUBUH ---
-    private Sprite torso;
-    private Sprite head;
-    private Sprite rifle;
-    private Sprite leftFoot, rightFoot; // Kita pakai 2 sprite kaki
+    // UBAH INI: Jadi Array untuk menampung banyak variasi flash
+    private Sprite[] muzzleFlashes;
+    private int activeFlashIndex = 0; // Index flash yang sedang aktif
 
-    // --- VARIABEL ROTASI & ANIMASI ---
     private Vector3 mouseCoordinates;
     private float currentAngle = 0;
-
-    // Variabel untuk animasi jalan (kaki bergerak)
     private float walkTimer = 0;
     private boolean isMoving = false;
+    private float flashTimer = 0f;
 
     public Player(float x, float y) {
         position = new Vector2(x, y);
         speed = 200;
         mouseCoordinates = new Vector3();
 
-        // ASSETS
+        // LOAD ASSETS
         torso = new Sprite(new Texture("torso.png"));
         head = new Sprite(new Texture("head.png"));
         rifle = new Sprite(new Texture("rifle.png"));
 
-        // satu gambar kaki, dipake buat kiri dan kanan
         Texture footTex = new Texture("foot.png");
         leftFoot = new Sprite(footTex);
         rightFoot = new Sprite(footTex);
 
-        // SCALING
-        // kecilkan menjadi 25% (0.25f)
-        float scale = 0.4f;
+        muzzleFlashes = new Sprite[2];
+        muzzleFlashes[0] = new Sprite(new Texture("muzzle_flash_01.png"));
+        muzzleFlashes[1] = new Sprite(new Texture("muzzle_flash_02.png"));
+
+        // APPLY SCALE
         applyScale(torso, scale);
         applyScale(head, scale);
         applyScale(rifle, scale);
         applyScale(leftFoot, scale);
         applyScale(rightFoot, scale);
+
+        // Scale semua flash dalam array
+        for (Sprite flash : muzzleFlashes) {
+            applyScale(flash, scale * 0.06f);
+        }
     }
 
     private void applyScale(Sprite s, float scale) {
@@ -62,11 +72,15 @@ public class Player {
         handleInput(dt);
         handleRotation(cam);
         updateBodyParts(dt);
+
+        if (flashTimer > 0) {
+            flashTimer -= dt;
+            if (flashTimer < 0) flashTimer = 0;
+        }
     }
 
     private void handleInput(float dt) {
         isMoving = false;
-
         if (Gdx.input.isKeyPressed(Keys.W)) { position.y += speed * dt; isMoving = true; }
         if (Gdx.input.isKeyPressed(Keys.S)) { position.y -= speed * dt; isMoving = true; }
         if (Gdx.input.isKeyPressed(Keys.A)) { position.x -= speed * dt; isMoving = true; }
@@ -74,41 +88,34 @@ public class Player {
     }
 
     private void handleRotation(OrthographicCamera cam) {
-
         mouseCoordinates.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         cam.unproject(mouseCoordinates);
-
         float dx = mouseCoordinates.x - position.x;
         float dy = mouseCoordinates.y - position.y;
-        float angleRadian = MathUtils.atan2(dy, dx);
-        currentAngle = angleRadian * MathUtils.radDeg;
+        currentAngle = MathUtils.atan2(dy, dx) * MathUtils.radDeg;
     }
 
     private void updateBodyParts(float dt) {
-
-        float footOffset = 10f;
         float walkCycleSpeed = 15f;
         float footSwing = 0;
+        float swingRange = 32f * scale;
 
         if (isMoving) {
             walkTimer += dt * walkCycleSpeed;
-            footSwing = MathUtils.sin(walkTimer) * 8f;
+            footSwing = MathUtils.sin(walkTimer) * swingRange;
         } else {
             walkTimer = 0;
             footSwing = 0;
         }
 
-        setSpriteTransform(leftFoot, footSwing, 8);
-        setSpriteTransform(rightFoot, -footSwing, -8);
-
+        setSpriteTransform(leftFoot, footSwing, 8f * scale);
+        setSpriteTransform(rightFoot, -footSwing, -8f * scale);
         setSpriteTransform(torso, 0, 0);
-        setSpriteTransform(head, 2, 0);
-        setSpriteTransform(rifle, 15, -12);
+        setSpriteTransform(head, 2f * scale, 0);
+        setSpriteTransform(rifle, RIFLE_FORWARD * scale, RIFLE_SIDE * scale);
     }
 
-
     private void setSpriteTransform(Sprite s, float localX, float localY) {
-
         float rad = currentAngle * MathUtils.degRad;
         float cos = MathUtils.cos(rad);
         float sin = MathUtils.sin(rad);
@@ -126,12 +133,47 @@ public class Player {
         torso.draw(sb);
         head.draw(sb);
         rifle.draw(sb);
+
+        // random flash
+        if (flashTimer > 0) {
+            Vector2 tip = getGunTipPosition();
+
+            Sprite activeFlash = muzzleFlashes[activeFlashIndex];
+
+            activeFlash.setCenter(tip.x, tip.y);
+            activeFlash.setRotation(currentAngle);
+            activeFlash.draw(sb);
+        }
     }
+
+    public void shoot() {
+        flashTimer = 0.05f;
+
+        // Pilih angka acak: 0 atau 1 untuk pemilihan sprite flash yang digunakan
+        activeFlashIndex = MathUtils.random(0, 1);
+    }
+
+    public Vector2 getGunTipPosition() {
+        float rad = currentAngle * MathUtils.degRad;
+        float totalForward = (RIFLE_FORWARD + GUN_LENGTH) * scale;
+        float totalSide = RIFLE_SIDE * scale;
+
+        float tipX = position.x + (MathUtils.cos(rad) * totalForward) - (MathUtils.sin(rad) * totalSide);
+        float tipY = position.y + (MathUtils.sin(rad) * totalForward) + (MathUtils.cos(rad) * totalSide);
+
+        return new Vector2(tipX, tipY);
+    }
+
+    public float getRotation() { return currentAngle; }
 
     public void dispose() {
         torso.getTexture().dispose();
         head.getTexture().dispose();
         rifle.getTexture().dispose();
         leftFoot.getTexture().dispose();
+
+        for (Sprite flash : muzzleFlashes) {
+            flash.getTexture().dispose();
+        }
     }
 }
