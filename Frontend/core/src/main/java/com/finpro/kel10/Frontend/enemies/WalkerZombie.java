@@ -1,4 +1,7 @@
 package com.finpro.kel10.Frontend.enemies;
 
-public class WalkerZombie {
+import com.badlogic.gdx.graphics.Texture;
+
+public class WalkerZombie extends BaseZombie {
+
 }
