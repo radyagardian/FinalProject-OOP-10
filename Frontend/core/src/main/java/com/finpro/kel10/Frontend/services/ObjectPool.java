@@ -35,4 +35,8 @@ public abstract class ObjectPool<T> {
         }
         inUse.clear();
     }
+
+    public List<T> getInUse(){
+        return new ArrayList<>(inUse);
+    }
 }

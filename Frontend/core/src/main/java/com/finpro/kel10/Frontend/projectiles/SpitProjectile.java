@@ -16,10 +16,10 @@ public class SpitProjectile {
     private boolean active;
     private TextureRegion texture;
     private Rectangle collider;
-    private int damage;
+    private int damage = 10;
 
     public SpitProjectile(){
-        Texture img = new Texture(Gdx.files.internal("zombieSpit.png"));
+        Texture img = new Texture(Gdx.files.internal("zombieSpit.jpg"));
         this.texture = new TextureRegion(img);
         this.collider = new Rectangle(0, 0, WIDTH, HEIGHT);
         this.position = new Vector2();
@@ -28,9 +28,10 @@ public class SpitProjectile {
     }
 
     public void initialize(Vector2 startPos, Vector2 targetPos){
-        this.position = startPos;
+        this.position.set(startPos);
         velocity.set(targetPos).sub(startPos).nor().scl(speed);
         active = true;
+        collider.setPosition(position.x, position.y);
     }
 
     public void update(float delta){
@@ -53,5 +54,13 @@ public class SpitProjectile {
 
     public void setActive(boolean active){
         this.active = active;
+    }
+
+    public int getDamage(){
+        return damage;
+    }
+
+    public Rectangle getCollider(){
+        return collider;
     }
 }

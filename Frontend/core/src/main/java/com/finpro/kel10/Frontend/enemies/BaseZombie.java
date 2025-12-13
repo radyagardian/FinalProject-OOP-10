@@ -14,6 +14,7 @@ public abstract class BaseZombie {
     protected float speed;
     protected int health;
     protected int maxHealth;
+    protected int damage;
     protected int scoreValue;
     protected boolean active;
     protected float attackTimer;
@@ -62,5 +63,17 @@ public abstract class BaseZombie {
         health = maxHealth;
         active = true;
         attackTimer = 0;
+    }
+
+    public int getDamage(){
+        return damage;
+    }
+
+    public Rectangle getCollider(){
+        return collider;
+    }
+
+    public boolean isActive(){
+        return active;
     }
 }
