@@ -17,12 +17,13 @@ public class BulletPool {
         }
     }
 
+
     public void shoot(float x, float y, float angle) {
         // Cari peluru yang tidak aktif, lalu aktifkan
         for (Bullet b : bullets) {
             if (!b.isActive()) {
                 b.init(x, y, angle);
-                break; // Cukup aktifkan satu peluru
+                break; // aktifkan satu peluru aja
             }
         }
     }
