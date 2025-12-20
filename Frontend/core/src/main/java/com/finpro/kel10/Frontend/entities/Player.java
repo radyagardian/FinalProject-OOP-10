@@ -6,15 +6,19 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.finpro.kel10.Frontend.observers.Observer;
+import com.finpro.kel10.Frontend.observers.Subject;
 
-public class Player {
-    // --- KONFIGURASI POSISI & ROTASI (TUNING DISINI) ---
+import java.util.ArrayList;
+import java.util.List;
+
+public class Player implements Subject {
+    // --- KONFIGURASI POSISI ---
     private float scale = 0.4f;
-
-    // Posisi Senjata
     private float RIFLE_FORWARD = 40f;
     private float RIFLE_SIDE = -45f;
     private float GUN_LENGTH = 85f;
@@ -50,6 +54,7 @@ public class Player {
 
     // --- VARIABLES ---
     private Vector2 position;
+    private Vector2 startPosition;
     private float speed;
     private Sprite torso, head, leftFoot, rightFoot;
     private Sprite rifle;
@@ -57,6 +62,7 @@ public class Player {
     private Sprite rightArm;
     private Sprite leftArm, leftForearm;
 
+    // UBAH INI: Jadi Array untuk menampung banyak variasi flash
     private Sprite[] muzzleFlashes;
     private int activeFlashIndex = 0;
     private Vector3 mouseCoordinates;
@@ -64,6 +70,14 @@ public class Player {
     private float walkTimer = 0;
     private boolean isMoving = false;
     private float flashTimer = 0f;
+
+    private List<Observer> observers = new ArrayList<>();
+    private int maxHealth;
+    private int currentHealth;
+    private Rectangle collider;
+    private float hitCd;
+    private boolean isDead;
+
 
     public Player(float x, float y) {
         position = new Vector2(x, y);
@@ -104,9 +118,14 @@ public class Player {
         applyScale(leftArm, scale);
         applyScale(leftForearm, scale);
 
+        // Scale semua flash dalam array
         for (Sprite flash : muzzleFlashes) {
             applyScale(flash, scale * 0.06f);
         }
+        this.startPosition = new Vector2(x, y);
+        this.maxHealth = 100;
+        this.currentHealth = maxHealth;
+        this.collider = new Rectangle(0, 0, torso.getWidth()*scale, torso.getHeight()*scale);
     }
 
     private void applyScale(Sprite s, float scale) {
@@ -115,7 +134,11 @@ public class Player {
     }
 
     public void update(float dt, OrthographicCamera cam) {
-        handleInput(dt);
+        if(hitCd>0){
+            hitCd -= dt;
+        }
+        collider.setCenter(position.x, position.y);
+
         handleRotation(cam);
         updateBodyParts(dt);
 
@@ -125,12 +148,36 @@ public class Player {
         }
     }
 
-    private void handleInput(float dt) {
+    public void reset(){
+        currentHealth = maxHealth;
+        isDead = false;
         isMoving = false;
-        if (Gdx.input.isKeyPressed(Keys.W)) { position.y += speed * dt; isMoving = true; }
-        if (Gdx.input.isKeyPressed(Keys.S)) { position.y -= speed * dt; isMoving = true; }
-        if (Gdx.input.isKeyPressed(Keys.A)) { position.x -= speed * dt; isMoving = true; }
-        if (Gdx.input.isKeyPressed(Keys.D)) { position.x += speed * dt; isMoving = true; }
+        this.position.set(startPosition);
+        this.collider.setPosition(position.x, position.y);
+    }
+
+    public void stopMoving(){
+        isMoving = false;
+    }
+
+    public void moveUp(float delta){
+        position.y += speed * delta;
+        isMoving = true;
+    }
+
+    public void moveDown(float delta){
+        position.y -= speed * delta;
+        isMoving = true;
+    }
+
+    public void moveRight(float delta){
+        position.x += speed *delta;
+        isMoving = true;
+    }
+
+    public void moveLeft(float delta){
+        position.x -= speed * delta;
+        isMoving = true;
     }
 
     private void handleRotation(OrthographicCamera cam) {
@@ -225,6 +272,8 @@ public class Player {
 
     public void shoot() {
         flashTimer = 0.05f;
+
+        // Pilih angka acak: 0 atau 1 untuk pemilihan sprite flash yang digunakan
         activeFlashIndex = MathUtils.random(0, 1);
     }
 
@@ -256,4 +305,50 @@ public class Player {
             flash.getTexture().dispose();
         }
     }
+
+    public Vector2 getPosition(){
+        return position;
+    }
+
+    @Override
+    public void addObserver(Observer observer){
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer){
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObserver(String event){
+        for(Observer observer : observers){
+            observer.onNotify(this, event);
+        }
+    }
+
+    public void takeDamage(int amount){
+        if(hitCd <= 0 &&!isDead){
+            currentHealth -= amount;
+            hitCd = 1f;
+            notifyObserver("DAMAGE");
+            if(currentHealth <=0){
+                isDead = true;
+                notifyObserver("DEAD");
+            }
+        }
+    }
+
+    public Rectangle getCollider(){
+        return collider;
+    }
+
+    public int getCurrentHealth(){
+        return currentHealth;
+    }
+
+    public int getMaxHealth(){
+        return maxHealth;
+    }
 }
+

@@ -14,6 +14,9 @@ public abstract class GameState {
         cam.setToOrtho(false, Main.WIDTH, Main.HEIGHT);
     }
 
+    protected GameState() {
+    }
+
     public abstract void handleInput();
     public abstract void update(float dt);
     public abstract void render(SpriteBatch sb);
