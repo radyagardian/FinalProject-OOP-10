@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.finpro.kel10.Frontend.observers.Observer;
 import com.finpro.kel10.Frontend.observers.Subject;
+import com.finpro.kel10.Frontend.AudioManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -227,6 +228,9 @@ public class Player implements Subject {
     public Vector2 getPosition(){
         return position;
     }
+
+
+
 
     @Override
     public void addObserver(Observer observer){
