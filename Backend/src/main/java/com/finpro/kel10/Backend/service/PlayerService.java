@@ -94,7 +94,7 @@ public class PlayerService {
     }
 
     public List<Player> getLeaderboardByHighScore(int limit) {
-        return playerRepository.findTOpPlayersByHighScore(limit);
+        return playerRepository.findTopPlayersByHighScore(limit);
     }
 
     public List<Player> getLeaderboardByTotalCoins() {
@@ -110,6 +110,16 @@ public class PlayerService {
     }
 
     public void updatePlayerStats(Score savedScore) {
+        Player player = playerRepository.findById(savedScore.getPlayerId())
+                .orElseThrow(() -> new RuntimeException("Player not found"));
+
+        if (savedScore.getValue() > player.getHighScore()) {
+            player.setHighScore(savedScore.getValue());
+        }
+        player.setTotalCoins(player.getTotalCoins() + savedScore.getCoinsCollected());
+        player.setTotalDistance(player.getTotalDistance() + savedScore.getDistanceTravelled());
+
+        playerRepository.save(player);
     }
 
 }
