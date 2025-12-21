@@ -11,7 +11,7 @@ public class WalkerZombie extends BaseZombie {
         super(startPos);
         Texture img = new Texture(Gdx.files.internal("walkerZombie.png"));
         this.sprite.setRegion(img);
-        this.sprite.setSize(img.getWidth(), img.getHeight());
+        this.sprite.setSize(img.getWidth() - 10, img.getHeight() - 20);
         this.sprite.setOriginCenter();
         this.speed = 100f;
         this.health = 30;

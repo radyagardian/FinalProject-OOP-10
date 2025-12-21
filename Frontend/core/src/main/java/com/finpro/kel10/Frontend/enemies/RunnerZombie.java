@@ -28,7 +28,7 @@ public class RunnerZombie extends BaseZombie {
         this.projectilePool = pool;
         Texture img = new Texture(Gdx.files.internal("runnerZombie.png"));
         this.sprite.setRegion(img);
-        this.sprite.setSize(img.getWidth(), img.getHeight());
+        this.sprite.setSize(img.getWidth() - 20, img.getHeight() - 20);
         this.sprite.setOriginCenter();
         this.speed = 100f;
         this.health = 20;

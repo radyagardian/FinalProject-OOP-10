@@ -34,6 +34,7 @@ public abstract class BaseItem {
     public boolean isActive() { return active; }
     public void deactivate() { active = false; }
     public Rectangle getBounds() { return bounds; }
+    public void update(float dt) {}
 
     public void dispose() {
         if (sprite.getTexture() != null) sprite.getTexture().dispose();
