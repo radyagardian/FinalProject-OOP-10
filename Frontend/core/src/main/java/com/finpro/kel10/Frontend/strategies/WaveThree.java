@@ -14,7 +14,7 @@ public class WaveThree implements DifficultyStrategy{
     }
     @Override
     public float getSpawnInterval(){
-        return 0.8f;
+        return 1.5f;
     }
     @Override
     public int getDensity(){

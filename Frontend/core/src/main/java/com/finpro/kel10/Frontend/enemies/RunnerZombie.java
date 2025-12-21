@@ -15,6 +15,7 @@ public class RunnerZombie extends BaseZombie {
     private float currentDashTime = 0;
     private boolean isDashing;
     private ObjectPool<SpitProjectile> projectilePool;
+    private SpitProjectile spitTemp;
     private float dashCdTimer = 0;
     private float dashCdTotal = 4f;
     private boolean hasDealtDamage;
@@ -43,7 +44,7 @@ public class RunnerZombie extends BaseZombie {
     public void botBehavior(float delta, Player player) {
         float angle = MathUtils.atan2(player.getPosition().y - this.position.y,
             player.getPosition().x - this.position.x) * MathUtils.radDeg;
-        this.sprite.setRotation(angle);
+        this.sprite.setRotation(angle - 90);
 
         float distance = Vector2.dst(this.position.x, this.position.y, player.getPosition().x, player.getPosition().y);
 
@@ -75,6 +76,7 @@ public class RunnerZombie extends BaseZombie {
                 if(projectilePool != null){
                     SpitProjectile bullet = projectilePool.obtain();
                     bullet.initialize(this.position, player.getPosition());
+                    this.spitTemp = bullet;
                 }
                 this.dashDirection = player.getPosition().cpy().sub(this.position).nor();
                 this.isDashing = true;
@@ -88,5 +90,11 @@ public class RunnerZombie extends BaseZombie {
             this.position.mulAdd(direction, this.speed * delta);
             this.sprite.setPosition(this.position.x, this.position.y);
         }
+    }
+
+    public SpitProjectile getSpit() {
+        SpitProjectile temp = spitTemp;
+        spitTemp = null;
+        return temp;
     }
 }

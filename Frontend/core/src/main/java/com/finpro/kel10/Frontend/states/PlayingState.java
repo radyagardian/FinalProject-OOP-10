@@ -10,15 +10,18 @@ import com.finpro.kel10.Frontend.Main;
 import com.finpro.kel10.Frontend.commands.Command;
 import com.finpro.kel10.Frontend.commands.InputHandler;
 import com.finpro.kel10.Frontend.enemies.BaseZombie;
+import com.finpro.kel10.Frontend.enemies.RunnerZombie;
 import com.finpro.kel10.Frontend.entities.Bullet;
 import com.finpro.kel10.Frontend.entities.Player;
 import com.finpro.kel10.Frontend.factories.EnemyFactory;
 import com.finpro.kel10.Frontend.factories.ItemFactory; // Import Baru
+import com.finpro.kel10.Frontend.projectiles.SpitProjectile;
 import com.finpro.kel10.Frontend.services.BulletPool;
 import com.finpro.kel10.Frontend.strategies.DifficultyStrategy;
 import com.finpro.kel10.Frontend.strategies.WaveOne;
 import com.finpro.kel10.Frontend.strategies.WaveThree;
 import com.finpro.kel10.Frontend.strategies.WaveTwo;
+import com.finpro.kel10.Frontend.observers.ScoreUIObserver;
 
 import java.util.ArrayList;
 import java.util.HashMap; // Import Baru
@@ -33,14 +36,14 @@ public class PlayingState extends GameState {
 
     private EnemyFactory enemyFactory;
     private List<BaseZombie> activeEnemies;
-
-    // --- ITEM SYSTEM ---
-    private ItemFactory itemFactory; // Variable Baru
+    private List<SpitProjectile> activeEnemyProjectiles;
+    private ItemFactory itemFactory;
 
     private DifficultyStrategy currentStrategy;
     private GameManager gameManager;
     private float spawnTimer = 0;
     private int lastLoggedScore = -1;
+    private ScoreUIObserver scoreUI;
 
     private void logScore() {
         int currentScore = gameManager.getScore();
@@ -57,19 +60,23 @@ public class PlayingState extends GameState {
         activeBullets = new ArrayList<>();
         inputHandler = new InputHandler();
         gameManager = GameManager.getInstance();
+        scoreUI = new ScoreUIObserver();
 
         // Setup Enemy
         enemyFactory = new EnemyFactory();
         activeEnemies = new ArrayList<>();
+        activeEnemyProjectiles = new ArrayList<>();
         currentStrategy = new WaveOne();
         enemyFactory.setWeights(currentStrategy.getEnemyWeights());
 
-        // --- SETUP ITEM FACTORY ---
+        // Setup Items
         itemFactory = new ItemFactory();
         Map<String, Integer> itemWeights = new HashMap<>();
-        // Set probabilitas spawn (saat ini hanya Medkit)
+        // spawn probability (baru ada medkit)
         itemWeights.put("Medkit", 100);
         itemFactory.setWeights(itemWeights);
+
+        player.addObserver(scoreUI);
     }
 
     private void spawnEnemy(float dt) {
@@ -111,9 +118,35 @@ public class PlayingState extends GameState {
         for (int i = activeEnemies.size() - 1; i >= 0; i--) {
             BaseZombie enemy = activeEnemies.get(i);
             enemy.update(dt, player);
+
+            if (enemy instanceof RunnerZombie) {
+                SpitProjectile spit = ((RunnerZombie) enemy).getSpit();
+
+                if (spit != null) {
+                    activeEnemyProjectiles.add(spit);
+                }
+            }
+
             if (!enemy.isActive()) {
                 activeEnemies.remove(i);
                 enemyFactory.release(enemy);
+            }
+        }
+    }
+
+    private void updateEnemyProjectiles(float dt) {
+        for (int i = activeEnemyProjectiles.size() - 1; i >= 0; i--) {
+            SpitProjectile s = activeEnemyProjectiles.get(i);
+            s.update(dt);
+
+            // Cek Kena Player
+            if (s.isActive() && s.getCollider().overlaps(player.getCollider())) {
+                player.takeDamage(10);
+                s.setActive(false);
+            }
+
+            if (!s.isActive()) {
+                activeEnemyProjectiles.remove(i);
             }
         }
     }
@@ -141,15 +174,20 @@ public class PlayingState extends GameState {
 
     private void updateDifficulty() {
         int score = gameManager.getScore();
-        if (score >= 100 && !(currentStrategy instanceof WaveThree)) { //for demo purpose
-            currentStrategy = new WaveThree();
-            enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-            System.out.println(">>> WAVE 3 STARTED! (Difficulty: HARD) <<<");
+        if (score >= 100) {
+            if (!(currentStrategy instanceof WaveThree)){
+                currentStrategy = new WaveThree();
+                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
+                System.out.println(">>> WAVE 3 STARTED! (Difficulty: HARD) <<<");
+            }
         }
-        if (score >= 50 && score < 2000 && !(currentStrategy instanceof WaveTwo)) { //for demo purpose
-            currentStrategy = new WaveTwo();
-            enemyFactory.setWeights((currentStrategy.getEnemyWeights()));
-            System.out.println(">>> WAVE 2 STARTED! (Difficulty: MEDIUM) <<<");
+        else if (score >= 50) {
+            if (!(currentStrategy instanceof WaveTwo)){
+                currentStrategy = new WaveTwo();
+                enemyFactory.setWeights((currentStrategy.getEnemyWeights()));
+                System.out.println(">>> WAVE 2 STARTED! (Difficulty: MEDIUM) <<<");
+            }
+
         }
     }
 
@@ -161,13 +199,15 @@ public class PlayingState extends GameState {
         for (Command command : commands) {
             command.execute(player, dt);
         }
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            Bullet b = bulletPool.obtain();
-            Vector2 gunPos = player.getGunTipPosition();
-            b.init(gunPos.x, gunPos.y, player.getRotation());
-            activeBullets.add(b);
-            // muzzle flash
-            player.shoot();
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            if (player.canShoot()) {
+                Bullet b = bulletPool.obtain();
+                Vector2 gunPos = player.getGunTipPosition();
+                b.init(gunPos.x, gunPos.y, player.getRotation());
+                activeBullets.add(b);
+
+                player.shoot();
+            }
         }
     }
 
@@ -188,10 +228,9 @@ public class PlayingState extends GameState {
 
         spawnEnemy(dt);
         updateEnemies(dt);
-
-        // --- UPDATE ITEMS (SPAWN & COLLISION) ---
-        // Logic timer 30-45 detik dan efek medkit diambil sudah diurus di dalam sini
-        itemFactory.update(dt, player);
+        updateEnemyProjectiles(dt);
+        scoreUI.updateScore(gameManager.getScore());
+        player.addObserver(scoreUI);
 
         checkCollisions();
         logScore();
@@ -212,6 +251,8 @@ public class PlayingState extends GameState {
             currentStrategy = new WaveOne();
             enemyFactory.setWeights(currentStrategy.getEnemyWeights());
         }
+
+        itemFactory.update(dt, player);
     }
 
     @Override
@@ -222,7 +263,6 @@ public class PlayingState extends GameState {
         // --- RENDER ITEMS ---
         // Render item dulu agar posisinya di lantai (diinjak player/zombie)
         itemFactory.render(sb);
-
         player.render(sb);
 
         for (Bullet b : activeBullets) {
@@ -233,6 +273,11 @@ public class PlayingState extends GameState {
             z.render(sb);
         }
 
+        for (SpitProjectile s : activeEnemyProjectiles) {
+            if(s.isActive()) s.render(sb);
+        }
+
+        scoreUI.render();
         sb.end();
     }
 
@@ -241,8 +286,10 @@ public class PlayingState extends GameState {
         player.dispose();
         enemyFactory.releaseAllEnemies();
         activeEnemies.clear();
+        player.removeObserver(scoreUI);
 
         // --- DISPOSE ITEMS ---
         itemFactory.releaseAllItems();
+        scoreUI.dispose();
     }
 }

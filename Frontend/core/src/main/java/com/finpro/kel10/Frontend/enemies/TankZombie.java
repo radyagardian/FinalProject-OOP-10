@@ -14,8 +14,8 @@ public class TankZombie extends BaseZombie{
         this.sprite.setSize(img.getWidth(), img.getHeight());
         this.sprite.setOriginCenter();
         this.speed = 50f;
-        this.health = 300;
-        this.maxHealth = 300;
+        this.health = 200;
+        this.maxHealth = 200;
         this.damage = 10;
         this.scoreValue = 10;
         sprite.setScale(1.5f);
@@ -25,7 +25,7 @@ public class TankZombie extends BaseZombie{
     @Override
     public void botBehavior(float delta, Player player) {
         float angle = MathUtils.atan2(player.getPosition().y - this.position.y, player.getPosition().x - this.position.x) *MathUtils.radDeg;
-        this.sprite.setRotation(angle);
+        this.sprite.setRotation(angle - 90);
         Vector2 direction = player.getPosition().cpy().sub(this.position).nor();
         this.position.mulAdd(direction, this.speed * delta);
         this.sprite.setPosition(this.position.x, this.position.y);

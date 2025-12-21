@@ -23,18 +23,13 @@ public class ItemFactory {
     private final List<ItemCreator> weightedSelection = new ArrayList<>();
     private final Random random = new Random();
 
-    // --- LOGIKA TIMER SPAWN ---
     private float timer;
     private float nextSpawnTime;
-    private float mapWidth = 1280; // Sesuaikan ukuran map
+    private float mapWidth = 1280;
     private float mapHeight = 720;
 
     public ItemFactory() {
-        // 1. Register Creator
         register(new MedkitCreator());
-        // register(new AmmoCreator());
-
-        // 2. Set Timer Awal
         resetSpawnTimer();
     }
 

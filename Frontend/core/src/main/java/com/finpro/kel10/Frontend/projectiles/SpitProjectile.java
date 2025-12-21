@@ -56,6 +56,10 @@ public class SpitProjectile {
         this.active = active;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
     public int getDamage(){
         return damage;
     }

@@ -21,6 +21,8 @@ public class Player implements Subject {
     private float scale = 0.4f;
     private float RIFLE_FORWARD = 40f;
     private float RIFLE_SIDE = -45f;
+    private float fireRate = 0.175f;
+    private float fireTimer = 0f;
     private float GUN_LENGTH = 85f;
 
     // --- TUNING FLASH (BARU) ---
@@ -138,9 +140,12 @@ public class Player implements Subject {
             hitCd -= dt;
         }
         collider.setCenter(position.x, position.y);
-
         handleRotation(cam);
         updateBodyParts(dt);
+
+        if (fireTimer > 0) {
+            fireTimer -= dt;
+        }
 
         if (flashTimer > 0) {
             flashTimer -= dt;
@@ -272,9 +277,14 @@ public class Player implements Subject {
 
     public void shoot() {
         flashTimer = 0.05f;
+        fireTimer = fireRate;
 
-        // Pilih angka acak: 0 atau 1 untuk pemilihan sprite flash yang digunakan
+        // random flash
         activeFlashIndex = MathUtils.random(0, 1);
+    }
+
+    public boolean canShoot() {
+        return fireTimer <= 0;
     }
 
     public Vector2 getGunTipPosition() {

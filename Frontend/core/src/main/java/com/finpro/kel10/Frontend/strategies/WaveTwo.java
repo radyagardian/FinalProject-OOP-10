@@ -13,7 +13,7 @@ public class WaveTwo implements DifficultyStrategy{
     }
     @Override
     public float getSpawnInterval(){
-        return 1.5f;
+        return 1.7f;
     }
     @Override
     public int getDensity(){
