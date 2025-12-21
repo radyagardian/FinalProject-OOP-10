@@ -216,6 +216,7 @@ public class PlayingState extends GameState {
                 activeBullets.add(b);
 
                 player.shoot();
+                audioManager.playGunshotSFX();
             }
         }
     }
