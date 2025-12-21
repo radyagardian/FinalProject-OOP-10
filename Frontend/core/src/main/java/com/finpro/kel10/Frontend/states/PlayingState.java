@@ -47,6 +47,7 @@ public class PlayingState extends GameState {
     private float spawnTimer = 0;
     private int lastLoggedScore = -1;
     private ScoreUIObserver scoreUI;
+    private boolean isTransitioning = false;
 
     private void logScore() {
         int currentScore = gameManager.getScore();
@@ -219,62 +220,30 @@ public class PlayingState extends GameState {
 
     private void updateDifficulty() {
         int score = gameManager.getScore();
+        scoreUI.updateScore(score);
 
-        if (score >= 700) {
-            if (!(currentStrategy instanceof WaveFour)){
-                currentStrategy = new WaveFour();
-                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-                System.out.println(">>> WAVE 6 STARTED! (FINAL BOSS) <<<");
+        if (score >= 250) {
+            if (!(currentStrategy instanceof WaveThree) && !isTransitioning) {
+                isTransitioning = true;
 
-                float bossX = 1280 / 2f;
-                float bossY = 720 + 50;
-
-                BaseZombie boss = new FinalBoss(new Vector2(bossX, bossY));
-                activeEnemies.add(boss);
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveThree(), "WAVE 3 INCOMING! (HARD)"));
             }
         }
+        else if (score >= 150) {
+            if (!(currentStrategy instanceof WaveTwo) && !isTransitioning) {
+                isTransitioning = true;
 
-        else if (score >= 500) {
-            if (!(currentStrategy instanceof WaveFive)){
-                currentStrategy = new WaveFive();
-                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-                System.out.println(">>> WAVE 5 STARTED! (INSANE) <<<");
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveTwo(), "WAVE 2 INCOMING! (MEDIUM)"));
             }
-        }
-
-        else if (score >= 200) {
-            if (!(currentStrategy instanceof WaveFour)){
-                currentStrategy = new WaveFour();
-                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-                System.out.println(">>> WAVE 4 STARTED! (Boss Fight!) <<<");
-
-                float bossX = 1280 / 2f;
-                float bossY = 720 + 50;
-
-                BaseZombie boss = enemyFactory.createBoss(bossX, bossY);
-                activeEnemies.add(boss);
-            }
-        }
-
-        else if (score >= 100) {
-            if (!(currentStrategy instanceof WaveThree)){
-                currentStrategy = new WaveThree();
-                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-                System.out.println(">>> WAVE 3 STARTED! (Difficulty: HARD) <<<");
-            }
-        }
-        else if (score >= 50) {
-            if (!(currentStrategy instanceof WaveTwo)){
-                currentStrategy = new WaveTwo();
-                enemyFactory.setWeights((currentStrategy.getEnemyWeights()));
-                System.out.println(">>> WAVE 2 STARTED! (Difficulty: MEDIUM) <<<");
-            }
-
         }
     }
 
     @Override
     public void handleInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            gsm.push(new PauseState(gsm));
+            return;
+        }
         float dt = Gdx.graphics.getDeltaTime();
         player.stopMoving();
         List<Command> commands = inputHandler.handleInput();
@@ -312,7 +281,6 @@ public class PlayingState extends GameState {
         updateEnemies(dt);
         updateEnemyProjectiles(dt);
         scoreUI.updateScore(gameManager.getScore());
-        player.addObserver(scoreUI);
 
         checkCollisions();
         logScore();
@@ -320,18 +288,15 @@ public class PlayingState extends GameState {
 
         // Game Over Reset
         if (player.getCurrentHealth() <= 0) {
-            player.reset();
+            System.out.println("GAME OVER");
 
-            // Clear Enemies
             enemyFactory.releaseAllEnemies();
-            activeEnemies.clear();
-
-            // Clear Items (Bersihkan item dari layar)
             itemFactory.releaseAllItems();
+            activeEnemies.clear();
+            activeBullets.clear();
+            activeEnemyProjectiles.clear();
 
-            gameManager.resetScore();
-            currentStrategy = new WaveOne();
-            enemyFactory.setWeights(currentStrategy.getEnemyWeights());
+            gsm.set(new GameOverState(gsm));
         }
 
         itemFactory.update(dt, player);
@@ -381,5 +346,13 @@ public class PlayingState extends GameState {
         itemFactory.releaseAllItems();
         scoreUI.dispose();
         mapTexture.dispose();
+    }
+
+    public void setStrategy(DifficultyStrategy strategy){
+        this.currentStrategy = strategy;
+        enemyFactory.setWeights(strategy.getEnemyWeights());
+        this.isTransitioning = false;
+
+        System.out.println("Strategy updated to: " + strategy.getClass().getSimpleName());
     }
 }

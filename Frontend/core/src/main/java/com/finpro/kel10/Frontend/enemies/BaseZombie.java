@@ -52,6 +52,7 @@ public abstract class BaseZombie {
     public void onDeath(){
         active = false;
         GameManager.getInstance().addScore(scoreValue);
+        GameManager.getInstance().addKill();
     }
 
     public void initialize(float x, float y){

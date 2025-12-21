@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.finpro.kel10.Frontend.states.GameStateManager;
+import com.finpro.kel10.Frontend.states.MenuState;
 import com.finpro.kel10.Frontend.states.PlayingState;
 
 public class Main extends ApplicationAdapter {
@@ -22,7 +23,7 @@ public class Main extends ApplicationAdapter {
         gsm = new GameStateManager();
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
 
-        gsm.push(new PlayingState(gsm));
+        gsm.push(new MenuState(gsm));
     }
 
     @Override
