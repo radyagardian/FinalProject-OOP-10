@@ -181,14 +181,14 @@ public class PlayingState extends GameState {
             if (!(currentStrategy instanceof WaveThree) && !isTransitioning) {
                 isTransitioning = true;
 
-                gsm.push(new DifficultyTransitionState(gsm, this, new WaveThree(), "WAVE 3 INCOMING! (HARD)"));
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveThree(), "WAVE 3 INCOMING!"));
             }
         }
         else if (score >= 150) {
             if (!(currentStrategy instanceof WaveTwo) && !isTransitioning) {
                 isTransitioning = true;
 
-                gsm.push(new DifficultyTransitionState(gsm, this, new WaveTwo(), "WAVE 2 INCOMING! (MEDIUM)"));
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveTwo(), "WAVE 2 INCOMING!"));
             }
         }
     }
