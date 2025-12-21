@@ -3,13 +3,13 @@ package com.finpro.kel10.Frontend.factories;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.finpro.kel10.Frontend.entities.BaseItem;
+import com.finpro.kel10.Frontend.entities.Medkit; // Pastikan import Medkit
 import com.finpro.kel10.Frontend.entities.Player;
 
 import java.util.*;
 
 public class ItemFactory {
 
-    // Interface Internal (Sama seperti EnemyCreator)
     public interface ItemCreator {
         BaseItem create(float x, float y);
         void release(BaseItem item);
@@ -25,8 +25,8 @@ public class ItemFactory {
 
     private float timer;
     private float nextSpawnTime;
-    private float mapWidth = 1280;
-    private float mapHeight = 720;
+    private float mapWidth = 1280; // Sesuaikan dengan mapWorldWidth di PlayingState
+    private float mapHeight = 720; // Sesuaikan dengan mapWorldHeight
 
     public ItemFactory() {
         register(new MedkitCreator());
@@ -37,7 +37,6 @@ public class ItemFactory {
         creators.put(creator.getName(), creator);
     }
 
-    // --- SETUP PROBABILITAS (WAJIB DIPANGGIL DI AWAL) ---
     public void setWeights(Map<String, Integer> weights) {
         weightedSelection.clear();
         for (Map.Entry<String, Integer> entry : weights.entrySet()) {
@@ -51,58 +50,66 @@ public class ItemFactory {
         }
     }
 
-    // --- LOGIKA UPDATE (SPAWN & COLLISION) ---
+    // --- LOGIKA UPDATE UTAMA ---
     public void update(float dt, Player player) {
-        // A. Hitung Mundur Waktu Spawn
+        // A. Spawn Timer Logic
         timer += dt;
         if (timer >= nextSpawnTime) {
             spawnRandomItem();
             resetSpawnTimer();
         }
 
-        // B. Cek Tabrakan (Collision)
-        checkCollisions(player);
+        // B. Update Item & Cek Collision
+        // Kita gabung di sini agar efisien
+        processActiveItems(dt, player);
     }
 
     private void resetSpawnTimer() {
-        // Random antara 30 sampai 45 detik
         timer = 0;
-        nextSpawnTime = MathUtils.random(30f, 45f);
+        nextSpawnTime = MathUtils.random(15f, 30f); // Spawn tiap 15-30 detik
         System.out.println("Item berikutnya spawn dalam: " + nextSpawnTime + " detik");
     }
 
     private void spawnRandomItem() {
         if (weightedSelection.isEmpty()) return;
 
-        // Pilih Creator berdasarkan probabilitas
         int randomIndex = random.nextInt(weightedSelection.size());
         ItemCreator selectedCreator = weightedSelection.get(randomIndex);
 
-        // Random posisi spawn
-        float x = MathUtils.random(50, mapWidth - 50);
-        float y = MathUtils.random(50, mapHeight - 50);
+        // Random posisi (sesuaikan batas map agar tidak spawn di luar tembok)
+        float x = MathUtils.random(100, mapWidth - 100);
+        float y = MathUtils.random(100, mapHeight - 100);
 
         BaseItem item = selectedCreator.create(x, y);
-        System.out.println("Spawned: " + selectedCreator.getName());
+        System.out.println("Spawned: " + selectedCreator.getName() + " at " + x + "," + y);
     }
 
-    private void checkCollisions(Player player) {
-        // Iterate semua creator untuk cek item mereka yang sedang aktif
+    private void processActiveItems(float dt, Player player) {
         for (ItemCreator creator : creators.values()) {
             List<? extends BaseItem> activeItems = creator.getInUse();
 
-            for (BaseItem item : activeItems) {
-                if (item.isActive() && item.getBounds().overlaps(player.getCollider())) {
+            for (int i = activeItems.size() - 1; i >= 0; i--) {
+                BaseItem item = activeItems.get(i);
 
-                    item.onPickup(player); // item effect
+                if (!item.isActive()) {
                     creator.release(item);
-                    return;
+                    continue;
+                }
+
+                if (item.getBounds().overlaps(player.getCollider())) {
+                    if (item instanceof Medkit) {
+                        player.heal(30);
+                        System.out.println("Player took Medkit! HP +30");
+                    }
+
+                    // Tambahkan efek item lain (Ammo, Speed) pakai else if disini...
+
+                    creator.release(item);
                 }
             }
         }
     }
 
-    // --- RENDER & CLEANUP ---
     public void render(SpriteBatch sb) {
         for (ItemCreator creator : creators.values()) {
             List<? extends BaseItem> activeItems = creator.getInUse();

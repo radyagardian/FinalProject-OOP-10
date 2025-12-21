@@ -11,7 +11,7 @@ public class TankZombie extends BaseZombie{
         super(startPos);
         Texture img = new Texture(Gdx.files.internal("tankZombie.png"));
         this.sprite.setRegion(img);
-        this.sprite.setSize(img.getWidth(), img.getHeight());
+        this.sprite.setSize(img.getWidth() - 20, img.getHeight() - 20);
         this.sprite.setOriginCenter();
         this.speed = 50f;
         this.health = 200;

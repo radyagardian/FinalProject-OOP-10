@@ -2,6 +2,7 @@ package com.finpro.kel10.Frontend.states;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -10,17 +11,18 @@ import com.finpro.kel10.Frontend.Main;
 import com.finpro.kel10.Frontend.commands.Command;
 import com.finpro.kel10.Frontend.commands.InputHandler;
 import com.finpro.kel10.Frontend.enemies.BaseZombie;
+import com.finpro.kel10.Frontend.enemies.BossZombie;
+import com.finpro.kel10.Frontend.enemies.FinalBoss;
 import com.finpro.kel10.Frontend.enemies.RunnerZombie;
 import com.finpro.kel10.Frontend.entities.Bullet;
 import com.finpro.kel10.Frontend.entities.Player;
 import com.finpro.kel10.Frontend.factories.EnemyFactory;
 import com.finpro.kel10.Frontend.factories.ItemFactory; // Import Baru
+import com.finpro.kel10.Frontend.projectiles.BaseProjectile;
+import com.finpro.kel10.Frontend.projectiles.HomingProjectile;
 import com.finpro.kel10.Frontend.projectiles.SpitProjectile;
 import com.finpro.kel10.Frontend.services.BulletPool;
-import com.finpro.kel10.Frontend.strategies.DifficultyStrategy;
-import com.finpro.kel10.Frontend.strategies.WaveOne;
-import com.finpro.kel10.Frontend.strategies.WaveThree;
-import com.finpro.kel10.Frontend.strategies.WaveTwo;
+import com.finpro.kel10.Frontend.strategies.*;
 import com.finpro.kel10.Frontend.observers.ScoreUIObserver;
 
 import java.util.ArrayList;
@@ -36,10 +38,11 @@ public class PlayingState extends GameState {
 
     private EnemyFactory enemyFactory;
     private List<BaseZombie> activeEnemies;
-    private List<SpitProjectile> activeEnemyProjectiles;
+    private List<BaseProjectile> activeEnemyProjectiles;
     private ItemFactory itemFactory;
 
     private DifficultyStrategy currentStrategy;
+    private Texture mapTexture;
     private GameManager gameManager;
     private float spawnTimer = 0;
     private int lastLoggedScore = -1;
@@ -61,6 +64,7 @@ public class PlayingState extends GameState {
         inputHandler = new InputHandler();
         gameManager = GameManager.getInstance();
         scoreUI = new ScoreUIObserver();
+        mapTexture = new Texture("map.png");
 
         // Setup Enemy
         enemyFactory = new EnemyFactory();
@@ -127,6 +131,22 @@ public class PlayingState extends GameState {
                 }
             }
 
+            if (enemy instanceof BossZombie) {
+                List<SpitProjectile> bossShots = ((BossZombie) enemy).getProjectiles();
+
+                if (bossShots != null) {
+                    // masukin semua peluru boss ke list projectile
+                    activeEnemyProjectiles.addAll(bossShots);
+                }
+            }
+
+            if (enemy instanceof FinalBoss) {
+                List<BaseProjectile> bossShots = ((FinalBoss) enemy).getProjectiles();
+                if (bossShots != null) {
+                    activeEnemyProjectiles.addAll(bossShots);
+                }
+            }
+
             if (!enemy.isActive()) {
                 activeEnemies.remove(i);
                 enemyFactory.release(enemy);
@@ -136,22 +156,21 @@ public class PlayingState extends GameState {
 
     private void updateEnemyProjectiles(float dt) {
         for (int i = activeEnemyProjectiles.size() - 1; i >= 0; i--) {
-            SpitProjectile s = activeEnemyProjectiles.get(i);
+            BaseProjectile s = activeEnemyProjectiles.get(i);
+
             s.update(dt);
 
             // Cek Kena Player
             if (s.isActive() && s.getCollider().overlaps(player.getCollider())) {
-                player.takeDamage(10);
+                player.takeDamage(s.getDamage());
                 s.setActive(false);
             }
 
-            if (!s.isActive()) {
-                activeEnemyProjectiles.remove(i);
-            }
         }
     }
 
     private void checkCollisions() {
+        // --- 1. PELURU PLAYER KENA ZOMBIE ---
         for (Bullet b : activeBullets) {
             if (!b.isActive()) continue;
             for (BaseZombie z : activeEnemies) {
@@ -163,6 +182,32 @@ public class PlayingState extends GameState {
                 }
             }
         }
+
+        // --- 2. PELURU PLAYER KENA PROJECTILE MUSUH (Homing Missile) ---
+        for (Bullet b : activeBullets) {
+            if (!b.isActive()) continue;
+
+            // PERBAIKAN: Gunakan BaseProjectile di dalam loop, bukan SpitProjectile
+            for (BaseProjectile enemyProj : activeEnemyProjectiles) {
+                if (!enemyProj.isActive()) continue;
+
+                // Cek apakah projectile ini tipe HomingProjectile (yang bisa ditembak)
+                if (enemyProj instanceof HomingProjectile) {
+                    if (b.getCollider().overlaps(enemyProj.getCollider())) {
+
+                        // Hancurkan Missile
+                        ((HomingProjectile) enemyProj).hitByPlayerBullet();
+
+                        // Hancurkan Peluru Player
+                        b.setActive(false);
+
+                        break; // Lanjut ke peluru player berikutnya
+                    }
+                }
+            }
+        }
+
+        // --- 3. ZOMBIE NABRAK PLAYER ---
         for (BaseZombie z : activeEnemies) {
             if (z.isActive()) {
                 if (z.getCollider().overlaps(player.getCollider())) {
@@ -174,7 +219,44 @@ public class PlayingState extends GameState {
 
     private void updateDifficulty() {
         int score = gameManager.getScore();
-        if (score >= 100) {
+
+        if (score >= 700) {
+            if (!(currentStrategy instanceof WaveFour)){
+                currentStrategy = new WaveFour();
+                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
+                System.out.println(">>> WAVE 6 STARTED! (FINAL BOSS) <<<");
+
+                float bossX = 1280 / 2f;
+                float bossY = 720 + 50;
+
+                BaseZombie boss = new FinalBoss(new Vector2(bossX, bossY));
+                activeEnemies.add(boss);
+            }
+        }
+
+        else if (score >= 500) {
+            if (!(currentStrategy instanceof WaveFive)){
+                currentStrategy = new WaveFive();
+                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
+                System.out.println(">>> WAVE 5 STARTED! (INSANE) <<<");
+            }
+        }
+
+        else if (score >= 200) {
+            if (!(currentStrategy instanceof WaveFour)){
+                currentStrategy = new WaveFour();
+                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
+                System.out.println(">>> WAVE 4 STARTED! (Boss Fight!) <<<");
+
+                float bossX = 1280 / 2f;
+                float bossY = 720 + 50;
+
+                BaseZombie boss = enemyFactory.createBoss(bossX, bossY);
+                activeEnemies.add(boss);
+            }
+        }
+
+        else if (score >= 100) {
             if (!(currentStrategy instanceof WaveThree)){
                 currentStrategy = new WaveThree();
                 enemyFactory.setWeights(currentStrategy.getEnemyWeights());
@@ -260,25 +342,32 @@ public class PlayingState extends GameState {
         sb.setProjectionMatrix(cam.combined);
         sb.begin();
 
-        // --- RENDER ITEMS ---
-        // Render item dulu agar posisinya di lantai (diinjak player/zombie)
+        float mapWorldWidth = 1280f;
+        float ratio = (float) mapTexture.getHeight() / mapTexture.getWidth();
+        float mapWorldHeight = mapWorldWidth * ratio;
+
+        sb.draw(mapTexture, 0, 0, mapWorldWidth, mapWorldHeight);
         itemFactory.render(sb);
         player.render(sb);
 
-        for (Bullet b : activeBullets) {
-            b.render(sb);
+        for(Bullet b : activeBullets){
+            if(b.isActive()) b.render(sb);
         }
 
-        for (BaseZombie z : activeEnemies) {
-            z.render(sb);
+        for(BaseZombie z : activeEnemies){
+            if(z.isActive()) z.render(sb);
         }
 
-        for (SpitProjectile s : activeEnemyProjectiles) {
-            if(s.isActive()) s.render(sb);
+        // PERBAIKAN: Loop menggunakan BaseProjectile
+        for (BaseProjectile s : activeEnemyProjectiles) {
+            if (s.isActive()) {
+                s.render(sb);
+            }
         }
+
+        sb.end();
 
         scoreUI.render();
-        sb.end();
     }
 
     @Override
@@ -291,5 +380,6 @@ public class PlayingState extends GameState {
         // --- DISPOSE ITEMS ---
         itemFactory.releaseAllItems();
         scoreUI.dispose();
+        mapTexture.dispose();
     }
 }
