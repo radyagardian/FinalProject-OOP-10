@@ -23,7 +23,7 @@ public class WalkerZombie extends BaseZombie {
     @Override
     public void botBehavior(float delta, Player player) {
         float angle = MathUtils.atan2(player.getPosition().y - this.position.y, player.getPosition().x - this.position.x) *MathUtils.radDeg;
-        this.sprite.setRotation(angle);
+        this.sprite.setRotation(angle - 90);
         Vector2 direction = player.getPosition().cpy().sub(this.position).nor();
         this.position.mulAdd(direction, this.speed * delta);
         this.sprite.setPosition(this.position.x, this.position.y);

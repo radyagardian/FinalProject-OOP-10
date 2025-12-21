@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.finpro.kel10.Frontend.AudioManager;
 import com.finpro.kel10.Frontend.GameManager;
 import com.finpro.kel10.Frontend.Main;
 import com.finpro.kel10.Frontend.commands.Command;
@@ -54,7 +53,6 @@ public class PlayingState extends GameState {
         activeEnemies = new ArrayList<>();
         currentStrategy = new WaveOne();
         enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-
     }
 
     private void spawnEnemy(float dt){
