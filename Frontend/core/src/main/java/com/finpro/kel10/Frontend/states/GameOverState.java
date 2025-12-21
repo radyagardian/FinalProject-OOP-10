@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.finpro.kel10.Frontend.AudioManager;
 import com.finpro.kel10.Frontend.GameManager;
 
 public class GameOverState extends GameState {
@@ -13,8 +14,9 @@ public class GameOverState extends GameState {
     private int finalScore;
     private int totalKills;
     private GlyphLayout layout;
+    private AudioManager audioManager;
 
-    public GameOverState(GameStateManager gsm) {
+    public GameOverState(GameStateManager gsm, AudioManager audioManager) {
         super(gsm);
         font = new BitmapFont();
         font.getData().setScale(1.5f);
@@ -24,14 +26,16 @@ public class GameOverState extends GameState {
 
         this.finalScore = GameManager.getInstance().getScore();
         this.totalKills = 0;
+        this.audioManager = audioManager;
     }
 
     @Override
     public void handleInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             GameManager.getInstance().resetScore();
+            audioManager.playBackgroundMusic();
 
-            gsm.set(new PlayingState(gsm));
+            gsm.set(new PlayingState(gsm, audioManager));
         }
     }
 

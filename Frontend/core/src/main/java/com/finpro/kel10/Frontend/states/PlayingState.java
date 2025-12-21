@@ -56,7 +56,7 @@ public class PlayingState extends GameState {
         }
     }
 
-    public PlayingState(GameStateManager gsm) {
+    public PlayingState(GameStateManager gsm, AudioManager audioManager) {
         super(gsm);
         player = new Player(400, 300);
         bulletPool = new BulletPool();
@@ -71,7 +71,7 @@ public class PlayingState extends GameState {
         activeEnemyProjectiles = new ArrayList<>();
         currentStrategy = new WaveOne();
         enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-        audioManager = new AudioManager();
+        this.audioManager = audioManager;
 
         // Setup Items
         itemFactory = new ItemFactory();
@@ -198,7 +198,7 @@ public class PlayingState extends GameState {
     @Override
     public void handleInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            gsm.push(new PauseState(gsm));
+            gsm.push(new PauseState(gsm, audioManager));
             return;
         }
         // Cek jika tombol kiri mouse ditekan (JustClicked agar tidak nembak beruntun super cepat)
@@ -249,13 +249,16 @@ public class PlayingState extends GameState {
         if (player.getCurrentHealth() <= 0) {
             System.out.println("GAME OVER");
 
+            audioManager.stopBackgroundMusic();
+            audioManager.playGameoverSFX();
+
             enemyFactory.releaseAllEnemies();
             itemFactory.releaseAllItems();
             activeEnemies.clear();
             activeBullets.clear();
             activeEnemyProjectiles.clear();
 
-            gsm.set(new GameOverState(gsm));
+            gsm.set(new GameOverState(gsm, audioManager));
         }
 
         itemFactory.update(dt, player);

@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.finpro.kel10.Frontend.AudioManager;
 import com.finpro.kel10.Frontend.GameManager;
 
 public class MenuState extends GameState{
@@ -20,9 +21,11 @@ public class MenuState extends GameState{
     private TextField nameField;
     private Skin skin;
     private TextButton startButton;
+    private AudioManager audioManager;
 
-    public MenuState(GameStateManager gsm){
+    public MenuState(GameStateManager gsm, AudioManager audioManager){
         super(gsm);
+        this.audioManager = audioManager;
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         createBasicSkin();
@@ -95,7 +98,7 @@ public class MenuState extends GameState{
                 }
                 GameManager.getInstance().setUsername(name);
                 GameManager.getInstance().resetScore();
-                gsm.set(new PlayingState(gsm));
+                gsm.set(new PlayingState(gsm, audioManager));
             }
         });
 

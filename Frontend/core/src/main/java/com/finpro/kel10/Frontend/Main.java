@@ -25,13 +25,13 @@ public class Main extends ApplicationAdapter {
         gsm = new GameStateManager();
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
 
-        gsm.push(new PlayingState(gsm));
+        gsm.push(new PlayingState(gsm, audioManager));
 
         //buat backgroun music
         audioManager = new AudioManager();
         audioManager.playBackgroundMusic();
 
-        gsm.push(new MenuState(gsm));
+        gsm.push(new MenuState(gsm, audioManager));
     }
 
     @Override
