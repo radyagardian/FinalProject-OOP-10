@@ -69,7 +69,6 @@ public class PlayingState extends GameState {
         scoreUI = new ScoreUIObserver();
         mapTexture = new Texture("map.png");
 
-        // Setup Enemy
         enemyFactory = new EnemyFactory();
         activeEnemies = new ArrayList<>();
         activeEnemyProjectiles = new ArrayList<>();
@@ -77,7 +76,6 @@ public class PlayingState extends GameState {
         enemyFactory.setWeights(currentStrategy.getEnemyWeights());
         this.audioManager = audioManager;
 
-        // Setup Items
         itemFactory = new ItemFactory();
         Map<String, Integer> itemWeights = new HashMap<>();
         itemWeights.put("Medkit", 100);
@@ -183,26 +181,22 @@ public class PlayingState extends GameState {
         }
     }
 
-    // --- MODIFIKASI: UPDATE DIFFICULTY (WAVE LOGIC) ---
     private void updateDifficulty() {
         int score = gameManager.getScore();
         scoreUI.updateScore(score);
 
-        // WAVE 6: FINAL BOSS (Score 800)
         if (score >= 800) {
             if (!(currentStrategy instanceof WaveSix) && !isTransitioning) {
                 isTransitioning = true;
                 gsm.push(new DifficultyTransitionState(gsm, this, new WaveSix(), "FINAL WAVE! (BOSS)", audioManager));
             }
         }
-        // WAVE 4: BOSS ZOMBIE (Score 500)
         else if (score >= 500) {
             if (!(currentStrategy instanceof WaveFour) && !isTransitioning) {
                 isTransitioning = true;
                 gsm.push(new DifficultyTransitionState(gsm, this, new WaveFour(), "WAVE 4 INCOMING! (BOSS)", audioManager));
             }
         }
-        // WAVE 3 (Score 250)
         else if (score >= 250) {
             if (!(currentStrategy instanceof WaveThree) && !isTransitioning) {
                 isTransitioning = true;
@@ -224,7 +218,6 @@ public class PlayingState extends GameState {
     }
 
 
-    // --- MODIFIKASI: SET STRATEGY (SPAWN BOSS SAAT TRANSISI SELESAI) ---
     public void setStrategy(DifficultyStrategy strategy){
         this.currentStrategy = strategy;
         enemyFactory.setWeights(strategy.getEnemyWeights());
@@ -232,9 +225,7 @@ public class PlayingState extends GameState {
 
         System.out.println("Strategy updated to: " + strategy.getClass().getSimpleName());
 
-        // LOGIC SPAWN BOSS
         if (strategy instanceof WaveFour) {
-            // Spawn Boss Zombie di tengah atas
             float bossX = 1280 / 2f;
             float bossY = 720 + 50;
             BaseZombie boss = enemyFactory.createBoss(bossX, bossY);
@@ -242,7 +233,6 @@ public class PlayingState extends GameState {
             System.out.println("BOSS ZOMBIE SPAWNED!");
         }
         else if (strategy instanceof WaveSix) {
-            // Spawn Final Boss di dekat Player
             float bossX = player.getPosition().x;
             float bossY = player.getPosition().y + 400;
             BaseZombie boss = new FinalBoss(new Vector2(bossX, bossY));
@@ -257,7 +247,6 @@ public class PlayingState extends GameState {
             gsm.push(new PauseState(gsm, audioManager));
             return;
         }
-        // Cek jika tombol kiri mouse ditekan (JustClicked agar tidak nembak beruntun super cepat)
         float dt = Gdx.graphics.getDeltaTime();
         player.stopMoving();
         List<Command> commands = inputHandler.handleInput();

@@ -10,7 +10,6 @@ import com.finpro.kel10.Frontend.states.PlayingState;
 import com.finpro.kel10.Frontend.AudioManager;
 
 public class Main extends ApplicationAdapter {
-    // Definisi ukuran layar virtual
     public static final int WIDTH = 1280;
     public static final int HEIGHT = 720;
     public static final String TITLE = "Lead 4 Dead";

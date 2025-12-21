@@ -26,7 +26,6 @@ public class FinalBoss extends BaseZombie {
     public FinalBoss(Vector2 startPos) {
         super(startPos);
 
-        // Setup Visual Boss
         Texture img = new Texture(Gdx.files.internal("boss2.png"));
         this.sprite.setRegion(img);
 
@@ -45,24 +44,24 @@ public class FinalBoss extends BaseZombie {
 
     @Override
     public void botBehavior(float delta, Player player) {
-        // Rotasi ke player
+        // ngadep
         float angle = MathUtils.atan2(player.getPosition().y - this.position.y,
             player.getPosition().x - this.position.x) * MathUtils.radDeg;
         this.sprite.setRotation(angle - 90);
 
-        // Gerak ke player
+        // gerak
         Vector2 direction = player.getPosition().cpy().sub(this.position).nor();
         this.position.mulAdd(direction, speed * delta);
         this.sprite.setPosition(position.x, position.y);
 
-        // Ability 1: Homing Missile
+        // Ability 1 : homing flies(?) idk
         homingTimer -= delta;
         if (homingTimer <= 0) {
             shootHoming(player);
             homingTimer = homingCd;
         }
 
-        // Ability 2: Nova Burst
+        // Ability 2: NOVA BURST!
         burstTimer -= delta;
         if (burstTimer <= 0) {
             shootNova();
@@ -72,34 +71,30 @@ public class FinalBoss extends BaseZombie {
 
     private void shootHoming(Player player) {
         HomingProjectile missile = new HomingProjectile();
-        missile.initialize(this.position); // Initialize cukup posisi
+        missile.initialize(this.position);
         missile.setTarget(player);
 
-        queuedProjectiles.add(missile); // Bisa masuk karena dia anak BaseProjectile
+        queuedProjectiles.add(missile);
     }
 
     private void shootNova() {
-        // Loop setiap 30 derajat (total 12 peluru)
         for (int i = 0; i < 360; i += 30) {
             SpitProjectile bullet = new SpitProjectile();
 
             float angleRad = i * MathUtils.degRad; // Pastikan dikali degRad!
 
-            // Hitung target imajiner sejauh 1000 pixel dari boss
+            // target (sebenernya biar ngelurusin aja makanya jauh banget)
             Vector2 targetPos = new Vector2(
                 this.position.x + MathUtils.cos(angleRad) * 1000f,
                 this.position.y + MathUtils.sin(angleRad) * 1000f
             );
 
             bullet.initialize(this.position, targetPos);
-
-            // Masukkan ke antrian
             queuedProjectiles.add(bullet);
         }
-        System.out.println("DEBUG: FINAL BOSS NOVA FIRED!"); // Tambahkan print ini untuk cek
+        System.out.println("NOVA FIRED!"); // buat debug ae
     }
 
-    // GANTI RETURN TYPE
     public List<BaseProjectile> getProjectiles() {
         if (queuedProjectiles.isEmpty()) return null;
         List<BaseProjectile> temp = new ArrayList<>(queuedProjectiles);
