@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.finpro.kel10.Frontend.states.GameStateManager;
+import com.finpro.kel10.Frontend.states.MenuState;
 import com.finpro.kel10.Frontend.states.PlayingState;
 import com.finpro.kel10.Frontend.AudioManager;
 
@@ -30,6 +31,7 @@ public class Main extends ApplicationAdapter {
         audioManager = new AudioManager();
         audioManager.playBackgroundMusic();
 
+        gsm.push(new MenuState(gsm));
     }
 
     @Override

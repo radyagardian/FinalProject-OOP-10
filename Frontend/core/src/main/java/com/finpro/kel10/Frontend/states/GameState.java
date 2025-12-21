@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.finpro.kel10.Frontend.Main;
 
-public abstract class GameState {
+public abstract class  GameState {
     protected GameStateManager gsm;
     protected OrthographicCamera cam;
 

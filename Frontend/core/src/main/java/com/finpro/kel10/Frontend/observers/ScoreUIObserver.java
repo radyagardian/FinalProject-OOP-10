@@ -43,6 +43,9 @@ public class ScoreUIObserver implements Observer {
         font.setColor(Color.YELLOW);
         font.draw(batch, "Score: " + score, 20, Gdx.graphics.getHeight() - 50);
 
+        font.setColor(Color.WHITE);
+        font.draw(batch, "Press ESC to Pause", Gdx.graphics.getWidth() - 200, Gdx.graphics.getHeight() - 20);
+
         batch.end();
     }
 
