@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BossZombie extends BaseZombie {
-    // Hapus variable ObjectPool
     private List<SpitProjectile> queuedSpits = new ArrayList<>();
 
-    // Hapus parameter ObjectPool di Constructor
     public BossZombie(Vector2 startPos) {
         super(startPos);
 

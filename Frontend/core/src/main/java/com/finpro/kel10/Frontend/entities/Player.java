@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player implements Subject {
-    // --- KONFIGURASI POSISI ---
     private float scale = 0.3f;
     private float RIFLE_FORWARD = 40f;
     private float RIFLE_SIDE = -45f;
@@ -26,15 +25,9 @@ public class Player implements Subject {
     private float fireTimer = 0f;
     private float GUN_LENGTH = 85f;
     private List<Observer> observers = new ArrayList<>();
-
-    // --- TUNING FLASH (BARU) ---
-    // Ubah angka ini untuk memajukan/memundurkan flash
-    // Positif = Maju menjauhi laras, Negatif = Mundur mendekati laras
     private float FLASH_FORWARD_ADJUSTMENT = 25f;
 
-    // --- POSISI TANGAN & LENGAN (TIDAK DIUBAH) ---
-
-    // KANAN (Trigger)
+    // tangan kanan
     private float HAND_RIGHT_FORWARD = 35f;
     private float HAND_RIGHT_SIDE = -45f;
 
@@ -42,21 +35,21 @@ public class Player implements Subject {
     private float ARM_RIGHT_SIDE = -35f;
     private float ARM_RIGHT_ANGLE = -10f;
 
-    // KIRI (Steady)
+    // tangan kiri
     private float HAND_LEFT_FORWARD = 85f;
     private float HAND_LEFT_SIDE = -43f;
 
-    // Lengan Kiri (Bahu ke Siku)
+    // lengan Kiri
     private float ARM_LEFT_FORWARD = 30f;
     private float ARM_LEFT_SIDE = 35f;
     private float ARM_LEFT_ANGLE = -50f;
 
-    // Lengan Bawah Kiri (Siku ke Tangan)
+    // lengan bawah kiri
     private float FOREARM_LEFT_FORWARD = 65f;
     private float FOREARM_LEFT_SIDE = -10f;
     private float FOREARM_LEFT_ANGLE = -55f;
 
-    // --- VARIABLES ---
+    // variablessss
     private Vector2 position;
     private Vector2 startPosition;
     private float speed;
@@ -65,8 +58,6 @@ public class Player implements Subject {
     private Sprite rightHand, leftHand;
     private Sprite rightArm;
     private Sprite leftArm, leftForearm;
-
-    // UBAH INI: Jadi Array untuk menampung banyak variasi flash
     private Sprite[] muzzleFlashes;
     private int activeFlashIndex = 0;
     private Vector3 mouseCoordinates;
@@ -74,7 +65,6 @@ public class Player implements Subject {
     private float walkTimer = 0;
     private boolean isMoving = false;
     private float flashTimer = 0f;
-
     private int maxHealth;
     private int currentHealth;
     private Rectangle collider;
@@ -87,7 +77,6 @@ public class Player implements Subject {
         speed = 200;
         mouseCoordinates = new Vector3();
 
-        // LOAD ASSETS
         torso = new Sprite(new Texture("torso.png"));
         head = new Sprite(new Texture("head.png"));
         rifle = new Sprite(new Texture("rifle.png"));
@@ -109,7 +98,6 @@ public class Player implements Subject {
         muzzleFlashes[0] = new Sprite(new Texture("muzzle_flash_01.png"));
         muzzleFlashes[1] = new Sprite(new Texture("muzzle_flash_02.png"));
 
-        // APPLY SCALE
         applyScale(torso, scale);
         applyScale(head, scale);
         applyScale(rifle, scale);
@@ -121,7 +109,6 @@ public class Player implements Subject {
         applyScale(leftArm, scale);
         applyScale(leftForearm, scale);
 
-        // Scale semua flash dalam array
         for (Sprite flash : muzzleFlashes) {
             applyScale(flash, scale * 0.06f);
         }
@@ -207,44 +194,36 @@ public class Player implements Subject {
             footSwing = 0;
         }
 
-        // --- UPDATE DENGAN ROTASI ---
-
-        // Kaki (Tanpa rotasi tambahan)
         setSpriteTransform(leftFoot, footSwing, 8f * scale, 0);
         setSpriteTransform(rightFoot, -footSwing, -8f * scale, 0);
 
-        // Badan & Kepala (Tanpa rotasi tambahan)
         setSpriteTransform(torso, 0, 0, 0);
         setSpriteTransform(head, 2f * scale, 0, 0);
 
-        // Senjata & Tangan (Tanpa rotasi tambahan, ikut body)
         setSpriteTransform(rifle, RIFLE_FORWARD * scale, RIFLE_SIDE * scale, 0);
         setSpriteTransform(rightHand, HAND_RIGHT_FORWARD * scale, HAND_RIGHT_SIDE * scale, 0);
         setSpriteTransform(leftHand, HAND_LEFT_FORWARD * scale, HAND_LEFT_SIDE * scale, 0);
 
-        // --- LENGAN DENGAN ROTASI TAMBAHAN ---
-        // Lengan Kanan: Miring sedikit (-10 derajat)
         setSpriteTransform(rightArm, ARM_RIGHT_FORWARD * scale, ARM_RIGHT_SIDE * scale, ARM_RIGHT_ANGLE);
 
-        // Lengan Kiri: Miring tajam (-50 derajat)
         setSpriteTransform(leftArm, ARM_LEFT_FORWARD * scale, ARM_LEFT_SIDE * scale, ARM_LEFT_ANGLE);
 
-        // Lengan Bawah Kiri: Miring (-45 derajat)
         setSpriteTransform(leftForearm, FOREARM_LEFT_FORWARD * scale, FOREARM_LEFT_SIDE * scale, FOREARM_LEFT_ANGLE);
     }
 
-    // MODIFIKASI HELPER: Menambahkan parameter rotationOffset
+
     private void setSpriteTransform(Sprite s, float localX, float localY, float rotationOffset) {
         float rad = currentAngle * MathUtils.degRad;
         float cos = MathUtils.cos(rad);
         float sin = MathUtils.sin(rad);
 
+        // ini buat ngitung player rotasi berapa banyak, buat dipake senjatanya muter juga, dapet dr rumus "x cos() - y sin()"
         float globalX = position.x + (localX * cos - localY * sin);
         float globalY = position.y + (localX * sin + localY * cos);
 
         s.setCenter(globalX, globalY);
 
-        // Rotasi Player + Rotasi Tambahan Lengan
+        // rotasi player + rotasi tangan
         s.setRotation(currentAngle + rotationOffset);
     }
 
@@ -263,9 +242,8 @@ public class Player implements Subject {
         if (flashTimer > 0) {
             Vector2 tip = getGunTipPosition();
 
-            // --- LOGIKA FLASH BARU (MENGGUNAKAN OFFSET) ---
             float rad = currentAngle * MathUtils.degRad;
-            // Hitung posisi visual flash: Tip + (Jarak Tambahan * Scale)
+            // posisi flash = tip + (adjusment * scale)
             float flashX = tip.x + MathUtils.cos(rad) * (FLASH_FORWARD_ADJUSTMENT * scale);
             float flashY = tip.y + MathUtils.sin(rad) * (FLASH_FORWARD_ADJUSTMENT * scale);
 
