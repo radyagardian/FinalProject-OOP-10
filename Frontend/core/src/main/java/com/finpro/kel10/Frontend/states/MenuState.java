@@ -22,11 +22,15 @@ public class MenuState extends GameState{
     private Skin skin;
     private TextButton startButton;
     private AudioManager audioManager;
+    private Texture backgroundTexture;
 
     public MenuState(GameStateManager gsm, AudioManager audioManager){
         super(gsm);
         this.audioManager = audioManager;
         this.audioManager.playBackgroundMusic();
+
+        backgroundTexture = new Texture(Gdx.files.internal("BackgroundLead4Dead.png"));
+
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         createBasicSkin();
@@ -79,8 +83,6 @@ public class MenuState extends GameState{
         table.setFillParent(true);
         stage.addActor(table);
 
-        Label label1 = new Label("LEAD 4 DEAD", skin);
-        label1.setFontScale(2f);
         Label label2 = new Label("Enter Your Name: ", skin);
 
         nameField = new TextField("", skin);
@@ -103,10 +105,7 @@ public class MenuState extends GameState{
             }
         });
 
-        table.add(label1).padBottom(40);
-        table.row();
-
-        table.add(label2).padBottom(10);
+        table.add(label2).padTop(150).padBottom(10);
         table.row();
 
         table.add(nameField).width(300).height(40).padBottom(20);
@@ -127,6 +126,10 @@ public class MenuState extends GameState{
     public void render(SpriteBatch sb){
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        sb.begin();
+        sb.draw(backgroundTexture, 0,0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        sb.end();
         stage.draw();
     }
 
@@ -134,5 +137,6 @@ public class MenuState extends GameState{
     public void dispose(){
         if(stage!= null) stage.dispose();
         if(stage!= null) skin.dispose();
+        if(backgroundTexture != null) backgroundTexture.dispose();
     }
 }
