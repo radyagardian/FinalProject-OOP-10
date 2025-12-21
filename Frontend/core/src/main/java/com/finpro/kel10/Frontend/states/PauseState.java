@@ -90,7 +90,9 @@ public class PauseState extends GameState {
         exitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                audioManager.playBackgroundMusic();
                 gsm.set(new MenuState(gsm, audioManager));
+
             }
         });
 

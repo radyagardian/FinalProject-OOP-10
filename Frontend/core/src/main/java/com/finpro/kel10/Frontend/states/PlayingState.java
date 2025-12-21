@@ -178,22 +178,28 @@ public class PlayingState extends GameState {
 
     private void updateDifficulty() {
         int score = gameManager.getScore();
-        if (score >= 100) {
-            if (!(currentStrategy instanceof WaveThree)){
-                currentStrategy = new WaveThree();
-                enemyFactory.setWeights(currentStrategy.getEnemyWeights());
-                System.out.println(">>> WAVE 3 STARTED! (Difficulty: HARD) <<<");
+        scoreUI.updateScore(score);
+
+        if (score >= 250) {
+            if (!(currentStrategy instanceof WaveThree) && !isTransitioning) {
+                isTransitioning = true;
+
+                audioManager.pauseBackgroundMusic();
+                audioManager.playWaveChangeSFX();
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveThree(), "WAVE 3 INCOMING! (HARD)", audioManager));
             }
         }
-        else if (score >= 50) {
-            if (!(currentStrategy instanceof WaveTwo)){
-                currentStrategy = new WaveTwo();
-                enemyFactory.setWeights((currentStrategy.getEnemyWeights()));
-                System.out.println(">>> WAVE 2 STARTED! (Difficulty: MEDIUM) <<<");
-            }
+        else if (score >= 150) {
+            if (!(currentStrategy instanceof WaveTwo) && !isTransitioning) {
+                isTransitioning = true;
 
+                audioManager.pauseBackgroundMusic();
+                audioManager.playWaveChangeSFX();
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveTwo(), "WAVE 2 INCOMING! (MEDIUM)", audioManager));
+            }
         }
     }
+
 
     @Override
     public void handleInput() {

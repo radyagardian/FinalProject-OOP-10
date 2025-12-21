@@ -8,16 +8,22 @@ public class AudioManager {
     private Music backgroundMusic;
     private Sound gunshotSFX;
     private Sound gameoverSFX;
+    private Sound wavechangeSFX;
 
     public AudioManager() {
+        // Theme song
         backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("ThemeSong.mp3"));
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(0.40F);
 
+        // Gunshot
         gunshotSFX = Gdx.audio.newSound(Gdx.files.internal("GunShot.mp3"));
 
+        // Gameover
         gameoverSFX = Gdx.audio.newSound(Gdx.files.internal("GameOver.mp3"));
 
+        // ganti wave
+        wavechangeSFX = Gdx.audio.newSound(Gdx.files.internal("WaveChange.mp3"));
     }
 
     public void playBackgroundMusic(){
@@ -50,9 +56,14 @@ public class AudioManager {
         gameoverSFX.play(0.6f);
     }
 
+    public void playWaveChangeSFX(){
+        wavechangeSFX.play(0.6f);
+    }
+
     public void dispose(){
         backgroundMusic.dispose();
         gunshotSFX.dispose();
         gameoverSFX.dispose();
+        wavechangeSFX.dispose();
     }
 }

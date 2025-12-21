@@ -26,6 +26,7 @@ public class MenuState extends GameState{
     public MenuState(GameStateManager gsm, AudioManager audioManager){
         super(gsm);
         this.audioManager = audioManager;
+        this.audioManager.playBackgroundMusic();
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         createBasicSkin();
