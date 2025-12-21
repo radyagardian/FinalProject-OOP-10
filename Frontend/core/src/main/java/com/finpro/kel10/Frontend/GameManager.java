@@ -3,6 +3,7 @@ package com.finpro.kel10.Frontend;
 public class GameManager {
     private static GameManager instance;
     private int score;
+    private String username;
 
     private GameManager(){
         this.score = 0;
@@ -25,5 +26,12 @@ public class GameManager {
 
     public int resetScore(){
         return score = 0;
+    }
+
+    public void setUsername(String name) {
+        this.username = name;
+    }
+    public String getUsername() {
+        return this.username;
     }
 }
