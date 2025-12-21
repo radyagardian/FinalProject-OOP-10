@@ -74,7 +74,6 @@ public class Player implements Subject {
     private float walkTimer = 0;
     private boolean isMoving = false;
     private float flashTimer = 0f;
-
     private int maxHealth;
     private int currentHealth;
     private Rectangle collider;

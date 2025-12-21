@@ -79,11 +79,24 @@ public class FinalBoss extends BaseZombie {
     }
 
     private void shootNova() {
+        // Loop setiap 30 derajat (total 12 peluru)
         for (int i = 0; i < 360; i += 30) {
             SpitProjectile bullet = new SpitProjectile();
-            // ... logic sama ...
-            queuedProjectiles.add(bullet); // Bisa masuk karena dia anak BaseProjectile
+
+            float angleRad = i * MathUtils.degRad; // Pastikan dikali degRad!
+
+            // Hitung target imajiner sejauh 1000 pixel dari boss
+            Vector2 targetPos = new Vector2(
+                this.position.x + MathUtils.cos(angleRad) * 1000f,
+                this.position.y + MathUtils.sin(angleRad) * 1000f
+            );
+
+            bullet.initialize(this.position, targetPos);
+
+            // Masukkan ke antrian
+            queuedProjectiles.add(bullet);
         }
+        System.out.println("DEBUG: FINAL BOSS NOVA FIRED!"); // Tambahkan print ini untuk cek
     }
 
     // GANTI RETURN TYPE
