@@ -30,6 +30,10 @@ public class Main extends ApplicationAdapter {
         audioManager = new AudioManager();
         audioManager.playBackgroundMusic();
 
+        System.out.println("Connecting to Backend...");
+        DatabaseManager dbManager = new DatabaseManager();
+        GameManager.getInstance().setUsername("aa");
+
         gsm.push(new MenuState(gsm, audioManager));
     }
 

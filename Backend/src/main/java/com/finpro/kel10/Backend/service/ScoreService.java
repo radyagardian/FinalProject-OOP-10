@@ -22,7 +22,6 @@ public class ScoreService {
 
     @Autowired
     private PlayerService playerService;
-    private Object minValue;
 
     @Transactional
     public Score createScore(Score score) {
@@ -31,9 +30,7 @@ public class ScoreService {
         }
 
         Score savedScore = scoreRepository.save(score);
-
         playerService.updatePlayerStats(savedScore);
-
 
         return savedScore;
     }
@@ -56,51 +53,52 @@ public class ScoreService {
 
     public List<Score> getLeaderboard(int limit) {
         List<Score> topScores = scoreRepository.findTopScores();
-
         if (limit > 0 && topScores.size() > limit) {
             return topScores.subList(0, limit);
         }
-
         return topScores;
     }
+
     public List<Score> getHighScoreByPlayerId(UUID playerId){
         return scoreRepository.findHighestScoreByPlayerId(playerId);
     }
+
     public List<Score> getScoresAboveValue(Integer minValue){
         return scoreRepository.findByValueGreaterThan(minValue);
     }
+
     public List<Score> getRecentScores(){
         return scoreRepository.findAllByOrderByCreatedAtDesc();
     }
-    public Integer getTotalCoinsByPlayerId(UUID playerId){
-        scoreRepository.getTotalCoinsByPlayerId(playerId);
-        Integer total = scoreRepository.getTotalCoinsByPlayerId(playerId);
-        return total;
-    }
-    public Integer getTotalDistanceByPlayerId(UUID playerId){
-        scoreRepository.getTotalDistanceByPlayerId(playerId);
-        Integer total = scoreRepository.getTotalDistanceByPlayerId(playerId);
-        return total;
-    }
-    public Score updateScore(UUID scoreId, Score updatedScore){
-        scoreRepository.findById(scoreId)
-                .orElseThrow(() -> new RuntimeException("Score tidak ditemukan!"));
-        Score existingScore = new Score();
-        scoreRepository.save(existingScore);
-        Score Score = null;
-        return null;
-    }
-    public void deleteScoresByPlayerId(UUID playerID){
-        scoreRepository.findByPlayerId(playerID);
-        scoreRepository.deleteAll();
+
+    public Integer getTotalZombiesKilledByPlayerId(UUID playerId){
+        Integer total = scoreRepository.getTotalZombiesKilledByPlayerId(playerId);
+        return total != null ? total : 0;
     }
 
+
+    public Score updateScore(UUID scoreId, Score updatedScore){
+        Score existingScore = scoreRepository.findById(scoreId)
+                .orElseThrow(() -> new RuntimeException("Score tidak ditemukan!"));
+
+        if(updatedScore.getValue() != null) existingScore.setValue(updatedScore.getValue());
+        if(updatedScore.getZombiesKilled() != null) existingScore.setZombiesKilled(updatedScore.getZombiesKilled());
+
+        // Bagian Wave Dihapus
+
+        return scoreRepository.save(existingScore);
+    }
+
+    public void deleteScoresByPlayerId(UUID playerID){
+        List<Score> scores = scoreRepository.findByPlayerId(playerID);
+        scoreRepository.deleteAll(scores);
+    }
 
     public void deleteScore(UUID scoreId) {
-    }
-
-    public Optional<Score> getHighestScoreByPlayerId(UUID playerId) {
-        return Optional.empty();
+        if(scoreRepository.existsById(scoreId)) {
+            scoreRepository.deleteById(scoreId);
+        } else {
+            throw new RuntimeException("Score ID not found");
+        }
     }
 }
-

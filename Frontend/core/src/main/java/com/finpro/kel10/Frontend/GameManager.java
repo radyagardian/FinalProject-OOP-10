@@ -5,11 +5,13 @@ public class GameManager {
     private int score;
     private int killCount;
     private String username;
+    private String playerId;
 
     private GameManager(){
         this.score = 0;
         this.killCount = 0;
         this.username = "Player";
+        this.playerId = null;
     }
 
     public void addKill(){
@@ -26,6 +28,14 @@ public class GameManager {
 
     public String getUsername(){
         return username;
+    }
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
     }
 
     public static GameManager getInstance(){

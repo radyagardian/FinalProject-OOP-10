@@ -50,6 +50,7 @@ public class PlayingState extends GameState {
     private AudioManager audioManager;
     private ScoreUIObserver scoreUI;
     private boolean isTransitioning = false;
+    private boolean isEndlessMode = false;
 
     private void logScore() {
         int currentScore = gameManager.getScore();
@@ -99,7 +100,26 @@ public class PlayingState extends GameState {
                 case 2: posX = -buffer; posY = MathUtils.random(0, Main.HEIGHT); break;
                 case 3: posX = Main.WIDTH + buffer; posY = MathUtils.random(0, Main.HEIGHT); break;
             }
-            BaseZombie enemy = enemyFactory.createRandomEnemy(posX, posY);
+            BaseZombie enemy = null;
+            if (isEndlessMode) {
+                float chance = MathUtils.random(0f, 100f);
+
+                if (chance <= 1.0f) {
+                    // 1% FINAL BOSS
+                    enemy = new FinalBoss(new Vector2(posX, posY));
+                }
+                else if (chance <= 6.0f) {
+                    // 5% BOSS ZOMBIE
+                    enemy = enemyFactory.createBoss(posX, posY);
+                }
+                else {
+                    enemy = enemyFactory.createRandomEnemy(posX, posY);
+                }
+            }
+            else {
+                // WAVE NORMAL (1-6)
+                enemy = enemyFactory.createRandomEnemy(posX, posY);
+            }
             if (enemy != null) {
                 activeEnemies.add(enemy);
             }
@@ -184,16 +204,31 @@ public class PlayingState extends GameState {
     private void updateDifficulty() {
         int score = gameManager.getScore();
         scoreUI.updateScore(score);
+        if (score >= 2000){
+            if(!isEndlessMode && !isTransitioning){
+                isTransitioning = true;
+                isEndlessMode = true;
+
+                audioManager.pauseBackgroundMusic();
+                audioManager.playWaveChangeSFX();
+
+                gsm.push(new DifficultyTransitionState(gsm, this, new WaveSix(), "WAVE 7 (SURVIVAL)", audioManager));
+            }
+        }
 
         if (score >= 800) {
             if (!(currentStrategy instanceof WaveSix) && !isTransitioning) {
                 isTransitioning = true;
+                audioManager.pauseBackgroundMusic();
+                audioManager.playWaveChangeSFX();
                 gsm.push(new DifficultyTransitionState(gsm, this, new WaveSix(), "FINAL WAVE! (BOSS)", audioManager));
             }
         }
         else if (score >= 500) {
             if (!(currentStrategy instanceof WaveFour) && !isTransitioning) {
                 isTransitioning = true;
+                audioManager.pauseBackgroundMusic();
+                audioManager.playWaveChangeSFX();
                 gsm.push(new DifficultyTransitionState(gsm, this, new WaveFour(), "WAVE 4 INCOMING! (BOSS)", audioManager));
             }
         }

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.finpro.kel10.Frontend.AudioManager;
 import com.finpro.kel10.Frontend.GameManager;
+import com.finpro.kel10.Frontend.DatabaseManager;
 
 public class GameOverState extends GameState {
     private BitmapFont font;
@@ -27,11 +28,18 @@ public class GameOverState extends GameState {
         this.finalScore = GameManager.getInstance().getScore();
         this.totalKills = 0;
         this.audioManager = audioManager;
+        this.finalScore = GameManager.getInstance().getScore();
+        this.totalKills = GameManager.getInstance().getKillCount();
+        System.out.println("Game Over! Sending score to backend...");
+        DatabaseManager db = new DatabaseManager();
+        db.submitScore(finalScore);
     }
 
     @Override
     public void handleInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            GameManager.getInstance().resetScore();
+            audioManager.playBackgroundMusic();
             GameManager.getInstance().resetScore();
             audioManager.playBackgroundMusic();
 
