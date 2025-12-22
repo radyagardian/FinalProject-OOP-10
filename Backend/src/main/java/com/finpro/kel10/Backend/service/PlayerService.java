@@ -1,5 +1,6 @@
 package com.finpro.kel10.Backend.service;
 
+
 import com.finpro.kel10.Backend.model.Player;
 import com.finpro.kel10.Backend.model.Score;
 import com.finpro.kel10.Backend.repository.PlayerRepository;
@@ -16,6 +17,7 @@ public class PlayerService {
 
     @Autowired
     private PlayerRepository playerRepository;
+
 
     public Player createPlayer(Player player) {
         if (playerRepository.existsByUsername(player.getUsername())) {
@@ -53,6 +55,7 @@ public class PlayerService {
         Player existingPlayer = playerRepository.findById(playerId)
                 .orElseThrow(() -> new RuntimeException("Player not found with ID: " + playerId));
 
+        // Update username jika berbeda dan tersedia
         if (updatedPlayer.getUsername() != null &&
                 !updatedPlayer.getUsername().equals(existingPlayer.getUsername())) {
             existingPlayer.setUsername(updatedPlayer.getUsername());
@@ -65,6 +68,8 @@ public class PlayerService {
             throw new RuntimeException("Player not found with ID: " + playerId);
         }
         playerRepository.deleteById(playerId);
+
+
     }
 
     public void deletePlayerByUsername(String username) {
