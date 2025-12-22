@@ -26,7 +26,6 @@ public interface ScoreRepository extends JpaRepository<Score, UUID> {
     @Query("SELECT s FROM Score s WHERE s.playerId = :playerId ORDER BY s.value DESC")
     List<Score> findHighestScoreByPlayerId(@Param("playerId") UUID playerId);
 
-    // --- BAGIAN YANG DIUBAH ---
     @Query("SELECT SUM(s.zombiesKilled) FROM Score s WHERE s.playerId = :playerId")
     Integer getTotalZombiesKilledByPlayerId(@Param("playerId") UUID playerId);
 

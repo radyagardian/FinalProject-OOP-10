@@ -41,14 +41,10 @@ public class PlayerService {
         Player player = playerRepository.findById(savedScore.getPlayerId())
                 .orElseThrow(() -> new RuntimeException("Player not found"));
 
-        // 1. Update High Score
         player.updateHighScore(savedScore.getValue());
-
-        // 2. Tambah Total Zombie Kill (Jika null dianggap 0)
         int kills = savedScore.getZombiesKilled() != null ? savedScore.getZombiesKilled() : 0;
         player.addZombiesKilled(kills);
 
-        // 3. LOGIKA WAVE DIHAPUS
 
         playerRepository.save(player);
     }
@@ -83,8 +79,6 @@ public class PlayerService {
 
     // Leaderboard Methods
     public List<Player> getLeaderboardByHighScore(int limit) {
-        // Karena JPA standar tidak support limit di nama method tanpa Pageable,
-        // kita ambil semua lalu potong list-nya di Java (cara simpel)
         List<Player> allTop = playerRepository.findTopPlayersByHighScore(limit);
         if (allTop.size() > limit) {
             return allTop.subList(0, limit);

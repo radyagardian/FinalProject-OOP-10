@@ -34,7 +34,6 @@ public class ScoreController {
         return ResponseEntity.ok(scores);
     }
 
-    // BUG FIX: Method ini sebelumnya melakukan DELETE, sekarang sudah benar (GET)
     @GetMapping("/{scoreId}")
     public ResponseEntity<?> getScoreById(@PathVariable UUID scoreId){
         Optional<Score> score = scoreService.getScoreById(scoreId);
@@ -45,7 +44,6 @@ public class ScoreController {
         }
     }
 
-    // Method baru untuk menghapus Score berdasarkan ID
     @DeleteMapping("/{scoreId}")
     public ResponseEntity<?> deleteScore(@PathVariable UUID scoreId) {
         try {
@@ -85,8 +83,6 @@ public class ScoreController {
         List<Score> scores = scoreService.getRecentScores();
         return ResponseEntity.ok(scores);
     }
-
-    // --- ENDPOINT STATISTIK (ZOMBIE & WAVE) ---
 
     @GetMapping("/player/{playerId}/total-zombies")
     public ResponseEntity<?> getTotalZombiesByPlayerId(@PathVariable UUID playerId) {

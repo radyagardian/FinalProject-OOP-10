@@ -27,7 +27,6 @@ public class Score {
     @Column(name = "zombies_killed")
     private Integer zombiesKilled = 0;
 
-    // --- BAGIAN WAVE REACHED DIHAPUS DARI SINI ---
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -40,8 +39,6 @@ public class Score {
         this.value = value;
         this.zombiesKilled = zombiesKilled;
     }
-
-    // Getters and Setters
     public UUID getScoreId() { return scoreId; }
     public void setScoreId(UUID scoreId) { this.scoreId = scoreId; }
 

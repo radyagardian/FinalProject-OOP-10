@@ -23,7 +23,6 @@ public class Player {
     @Column(name = "total_zombies_killed")
     private Integer totalZombiesKilled = 0;
 
-    // --- BAGIAN WAVE DIHAPUS DARI SINI ---
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -35,7 +34,6 @@ public class Player {
         this.username = username;
     }
 
-    // Getters and Setters
     public UUID getPlayerId() { return playerId; }
     public void setPlayerId(UUID playerId) { this.playerId = playerId; }
 
@@ -51,7 +49,6 @@ public class Player {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    // Business Methods
     public void updateHighScore(Integer newScore) {
         if (newScore > this.highScore) {
             this.highScore = newScore;
@@ -62,5 +59,4 @@ public class Player {
         this.totalZombiesKilled += kills;
     }
 
-    // Method checkHighestWave DIHAPUS
 }

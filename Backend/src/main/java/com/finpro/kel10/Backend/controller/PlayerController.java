@@ -97,8 +97,6 @@ public class PlayerController {
         return ResponseEntity.ok("{\"exists\": " + exists + "}");
     }
 
-    // --- LEADERBOARD ENDPOINTS (UPDATED FOR ZOMBIE GAME) ---
-
     @GetMapping("/leaderboard/high-score")
     public ResponseEntity<List<Player>> getLeaderboardByHighScore(@RequestParam(defaultValue = "10") int limit) {
         List<Player> leaderboard = playerService.getLeaderboardByHighScore(limit);
