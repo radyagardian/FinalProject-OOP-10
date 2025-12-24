@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.finpro.kel10.Frontend.states.GameStateManager;
 import com.finpro.kel10.Frontend.states.MenuState;
 import com.finpro.kel10.Frontend.states.PlayingState;
+import com.finpro.kel10.Frontend.AudioManager;
 
 public class Main extends ApplicationAdapter {
     // Definisi ukuran layar virtual
@@ -16,6 +17,7 @@ public class Main extends ApplicationAdapter {
 
     private GameStateManager gsm;
     private SpriteBatch batch;
+    private AudioManager audioManager;
 
     @Override
     public void create() {
@@ -23,7 +25,13 @@ public class Main extends ApplicationAdapter {
         gsm = new GameStateManager();
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
 
-        gsm.push(new MenuState(gsm));
+        gsm.push(new PlayingState(gsm, audioManager));
+
+        //buat backgroun music
+        audioManager = new AudioManager();
+        audioManager.playBackgroundMusic();
+
+        gsm.push(new MenuState(gsm, audioManager));
     }
 
     @Override
@@ -37,5 +45,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         batch.dispose();
+        audioManager.dispose();
     }
+
 }

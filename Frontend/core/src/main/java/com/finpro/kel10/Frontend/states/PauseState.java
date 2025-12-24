@@ -15,13 +15,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.finpro.kel10.Frontend.AudioManager;
 
 public class PauseState extends GameState {
     private Stage stage;
     private Skin skin;
+    private AudioManager audioManager;
 
-    public PauseState(GameStateManager gsm) {
+    public PauseState(GameStateManager gsm, AudioManager audioManager) {
         super(gsm);
+        this.audioManager = audioManager;
+        this.audioManager.pauseBackgroundMusic();
         stage = new Stage(new ScreenViewport());
 
         Gdx.input.setInputProcessor(stage);
@@ -77,6 +81,7 @@ public class PauseState extends GameState {
         resumeBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                audioManager.resumeBackgroundMusic();
                 Gdx.input.setInputProcessor(null);
                 gsm.pop();
             }
@@ -85,7 +90,9 @@ public class PauseState extends GameState {
         exitBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                gsm.set(new MenuState(gsm));
+                audioManager.playBackgroundMusic();
+                gsm.set(new MenuState(gsm, audioManager));
+
             }
         });
 
@@ -95,7 +102,8 @@ public class PauseState extends GameState {
     }
 
     @Override
-    public void handleInput() {}
+    public void handleInput() {
+    }
 
     @Override
     public void update(float dt) {

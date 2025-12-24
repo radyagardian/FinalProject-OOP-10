@@ -12,18 +12,20 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.finpro.kel10.Frontend.observers.Observer;
 import com.finpro.kel10.Frontend.observers.Subject;
+import com.finpro.kel10.Frontend.AudioManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player implements Subject {
     // --- KONFIGURASI POSISI ---
-    private float scale = 0.4f;
+    private float scale = 0.3f;
     private float RIFLE_FORWARD = 40f;
     private float RIFLE_SIDE = -45f;
     private float fireRate = 0.175f;
     private float fireTimer = 0f;
     private float GUN_LENGTH = 85f;
+    private List<Observer> observers = new ArrayList<>();
 
     // --- TUNING FLASH (BARU) ---
     // Ubah angka ini untuk memajukan/memundurkan flash
@@ -72,8 +74,6 @@ public class Player implements Subject {
     private float walkTimer = 0;
     private boolean isMoving = false;
     private float flashTimer = 0f;
-
-    private List<Observer> observers = new ArrayList<>();
     private int maxHealth;
     private int currentHealth;
     private Rectangle collider;
@@ -320,6 +320,9 @@ public class Player implements Subject {
         return position;
     }
 
+
+
+
     @Override
     public void addObserver(Observer observer){
         observers.add(observer);
@@ -347,6 +350,16 @@ public class Player implements Subject {
                 notifyObserver("DEAD");
             }
         }
+    }
+
+    public void heal(int amount) {
+        currentHealth += amount;
+
+        if (currentHealth > maxHealth) {
+            currentHealth = maxHealth;
+        }
+
+        notifyObserver("health");
     }
 
     public Rectangle getCollider(){
